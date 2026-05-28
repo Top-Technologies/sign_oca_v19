@@ -26,3 +26,14 @@ body {
     height: 100%;
     padding: 1em;
 }
+
+.o_sign_oca_refuse_top_button {
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .o_sign_oca_refuse_top_button {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+    }
+}

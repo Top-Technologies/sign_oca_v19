@@ -142,11 +142,8 @@ class SignOcaRequest(models.Model):
     @api.depends("signatory_data")
     def _compute_next_item_id(self):
         for record in self:
-            record.next_item_id = (
-                record.signatory_data
-                and max([int(key) for key in record.signatory_data.keys()])
-                or 0
-            ) + 1
+            data = record.signatory_data if isinstance(record.signatory_data, dict) else {}
+            record.next_item_id = max([int(key) for key in data.keys()], default=0) + 1
 
     def preview(self):
         self.ensure_one()
@@ -165,7 +162,7 @@ class SignOcaRequest(models.Model):
         self.ensure_one()
         return {
             "name": self.name,
-            "items": self.signatory_data,
+            "items": self._get_signatory_data_map(),
             "roles": [
                 {"id": signer.role_id.id, "name": signer.role_id.name}
                 for signer in self.signer_ids
@@ -204,24 +201,28 @@ class SignOcaRequest(models.Model):
 
     def delete_item(self, item_id):
         self._ensure_draft()
-        data = self.signatory_data
-        data.pop(str(item_id))
+        data = self._get_signatory_data_map()
+        data.pop(str(item_id), None)
         self.signatory_data = data
         self._set_action_log("delete_field")
 
     def set_item_data(self, item_id, vals):
         self._ensure_draft()
-        data = self.signatory_data
-        data[str(item_id)].update(vals)
+        data = self._get_signatory_data_map()
+        item_key = str(item_id)
+        if item_key not in data or not isinstance(data[item_key], dict):
+            raise ValidationError(self.env._("Sign field not found."))
+        data[item_key].update(vals)
         self.signatory_data = data
         self._set_action_log("edit_field")
 
     def add_item(self, item_vals):
         self._ensure_draft()
         item_id = self.next_item_id
+        item_key = str(item_id)
         field_id = self.env["sign.oca.field"].browse(item_vals["field_id"])
-        signatory_data = self.signatory_data
-        signatory_data[item_id] = {
+        signatory_data = self._get_signatory_data_map()
+        signatory_data[item_key] = {
             "id": item_id,
             "field_id": field_id.id,
             "field_type": field_id.field_type,
@@ -237,10 +238,10 @@ class SignOcaRequest(models.Model):
             "default_value": field_id.default_value,
             "placeholder": "",
         }
-        signatory_data[item_id].update(item_vals)
+        signatory_data[item_key].update(item_vals)
         self.signatory_data = signatory_data
         self._set_action_log("add_field")
-        return signatory_data[item_id]
+        return signatory_data[item_key]
 
     def cancel(self):
         self.write({"state": "3_cancel"})
@@ -513,7 +514,7 @@ class SignOcaRequestSigner(models.Model):
         return {
             "role_id": self.role_id.id if not self.signed_on else False,
             "name": self.request_id.template_id.name,
-            "items": self.request_id.signatory_data,
+            "items": self.request_id._get_signatory_data_map(),
             "to_sign": self.request_id.to_sign,
             "ask_location": self.request_id.ask_location,
             "partner": {

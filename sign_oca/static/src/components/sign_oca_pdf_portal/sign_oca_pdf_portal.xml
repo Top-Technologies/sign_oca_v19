@@ -21,7 +21,13 @@
                                 Please Review And Act On This Document
                             </div>
                         </div>
-                        <div class="col-lg-4" />
+                        <div class="col-lg-4 d-flex justify-content-end align-items-center pe-3">
+                            <button
+                                class="btn btn-outline-danger o_sign_oca_refuse_top_button"
+                                id="sign_oca_refuse_button"
+                                t-on-click="(ev) => this._onClickRefuse(ev)"
+                            >Refuse document</button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -41,15 +47,6 @@
                         id="sign_oca_button"
                         t-on-click="(ev) => this._onClickSign(ev)"
                     >Validate &amp; Send document</button>
-                </div>
-            </div>
-            <div class="o_sign_oca_refuse_footer mt-3 mb-3 d-flex justify-content-start ps-3">
-                <div class="o_sign_validation_buttons">
-                    <button
-                        class="btn btn-outline-danger"
-                        id="sign_oca_refuse_button"
-                        t-on-click="(ev) => this._onClickRefuse(ev)"
-                    >Refuse document</button>
                 </div>
             </div>
         </div>
