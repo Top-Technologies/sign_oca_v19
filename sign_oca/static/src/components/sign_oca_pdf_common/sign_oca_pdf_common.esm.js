@@ -101,14 +101,9 @@ export default class SignOcaPdfCommon extends Component {
         var iframeCss = document.createElement("link");
         iframeCss.setAttribute("rel", "stylesheet");
         iframeCss.setAttribute("href", "/sign_oca/get_assets.css");
-
-        var iframeJs = document.createElement("script");
-        iframeJs.setAttribute("type", "text/javascript");
-        iframeJs.setAttribute("src", "/sign_oca/get_assets.js");
         iframeDocument
             .getElementsByTagName("head")[0]
             .append(iframeCss);
-        iframeDocument.getElementsByTagName("head")[0].append(iframeJs);
         $.each(this.info.items, (key) => {
             this.postIframeField(this.info.items[key]);
         });

@@ -12,6 +12,10 @@ _logger = logging.getLogger(__name__)
 class SignController(http.Controller):
     @http.route("/sign_oca/get_assets.<any(css,js):ext>", type="http", auth="public")
     def get_sign_resources(self, ext):
+        # The iframe only needs CSS overlays; serve a no-op JS payload to avoid
+        # hashed bundle redirects when no JS files are part of sign_assets.
+        if ext == "js":
+            return request.make_response("", headers=[("Content-Type", "application/javascript")])
         bundle = "sign_oca.sign_assets"
         files, _ = request.env["ir.qweb"]._get_asset_content(bundle)
         asset = AssetsBundle(bundle, files)
